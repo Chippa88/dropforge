@@ -1,0 +1,56 @@
+{
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "starter",
+        "growth",
+        "pro",
+        "trial"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "past_due",
+        "trialing",
+        "inactive"
+      ]
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
+    },
+    "products_used": {
+      "type": "number"
+    },
+    "products_limit": {
+      "type": "number"
+    },
+    "niches_limit": {
+      "type": "number"
+    },
+    "period_start": {
+      "type": "string"
+    },
+    "period_end": {
+      "type": "string"
+    },
+    "trial_ends_at": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "DropforgeSubscription"
+}
