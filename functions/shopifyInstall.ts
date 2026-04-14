@@ -1,7 +1,7 @@
 /**
- * shopifyInstall.ts — Dropforge v2
+ * shopifyInstall.ts — Dropforge v2.1
  * Initiates the Shopify OAuth install flow.
- * Redirects the merchant to Shopify's authorization page.
+ * Added: shop param sanitization to strip markdown/URL formatting artifacts.
  * #shopify #oauth #install #phase1
  */
 
@@ -17,10 +17,23 @@ const SCOPES = [
 const REDIRECT_URI = 'https://dropforge.pro/functions/shopifyCallback';
 
 Deno.serve(async (req) => {
-  const url  = new URL(req.url);
-  const shop = url.searchParams.get('shop');
+  const url = new URL(req.url);
+  let shop  = url.searchParams.get('shop') || '';
 
-  console.log('shopifyInstall called for shop:', shop);
+  console.log('shopifyInstall raw shop param:', shop);
+
+  // Sanitize: strip markdown link format [text](url) — extract just the domain
+  // e.g. "[dropforge-dev.myshopify.com](https://dropforge-dev.myshopify.com)" → "dropforge-dev.myshopify.com"
+  const markdownMatch = shop.match(/\[([^\]]+)\]/);
+  if (markdownMatch) {
+    shop = markdownMatch[1];
+    console.log('Sanitized markdown shop param to:', shop);
+  }
+
+  // Also strip any leading https:// or http:// if someone passed a full URL
+  shop = shop.replace(/^https?:\/\//, '').replace(/\/$/, '').trim();
+
+  console.log('shopifyInstall final shop:', shop);
 
   if (!shop) {
     return Response.json({ error: 'Missing shop parameter' }, { status: 400 });
