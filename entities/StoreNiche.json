@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "store_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "niche_key": {
+      "type": "string",
+      "enum": [
+        "home_decor",
+        "pet_supplies",
+        "fitness_wellness",
+        "kitchen_gadgets",
+        "baby_kids",
+        "beauty_skincare",
+        "outdoor_camping",
+        "tech_gadgets",
+        "fashion_accessories",
+        "toys_games"
+      ]
+    },
+    "niche_label": {
+      "type": "string"
+    },
+    "is_primary": {
+      "type": "boolean"
+    },
+    "is_active": {
+      "type": "boolean"
+    }
+  },
+  "required": [],
+  "name": "StoreNiche"
+}
