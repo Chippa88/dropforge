@@ -33,29 +33,35 @@ function Avatar({ name, email, size = 36 }) {
 
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
-  if (s < 60)   return `${s}s ago`;
-  if (s < 3600) return `${Math.floor(s/60)}m ago`;
-  if (s < 86400)return `${Math.floor(s/3600)}h ago`;
-  return `${Math.floor(s/86400)}d ago`;
+  if (s < 60)    return `${s}s ago`;
+  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
 }
 
-// ─── SIDEBAR ────────────────────────────────────────────────
+// ─── SIDEBAR ─────────────────────────────────────────────────
+// Routes use /Dropforge prefix to match App Builder page naming convention
 function Sidebar({ navigate, active }) {
+  const items = [
+    { icon: "⬛", label: "Dashboard",     path: "/DropforgeDashboard"  },
+    { icon: "🔍", label: "Find Products", path: "/DropforgeResearch"   },
+    { icon: "✅", label: "Queue",          path: "/DropforgeQueue"      },
+    { icon: "📊", label: "Analytics",     path: "/DropforgeAnalytics"  },
+    { icon: "🌐", label: "Community",     path: "/DropforgeCommunity"  },
+    { icon: "📧", label: "Digest Logs",   path: "/DropforgeDigestLogs" },
+    { icon: "⚙️", label: "Settings",      path: "/DropforgeSettings"   },
+  ];
   return (
     <aside style={{ width: 220, background: "#0d0e13", borderRight: "1px solid #1e2030", padding: "24px 0", display: "flex", flexDirection: "column", position: "fixed", top: 0, bottom: 0, left: 0, zIndex: 50 }}>
       <div style={{ padding: "0 24px 24px", borderBottom: "1px solid #1e2030", marginBottom: 8 }}>
         <div style={{ fontSize: 18, fontWeight: 700 }}>⚡ Drop<span style={{ color: "#6c63ff" }}>forge</span></div>
       </div>
-      {[
-        { icon: "⬛", label: "Dashboard",    path: "/Dashboard" },
-        { icon: "🔍", label: "Find Products", path: "/Research" },
-        { icon: "✅", label: "Queue",         path: "/Queue" },
-        { icon: "📊", label: "Analytics",     path: "/Analytics" },
-        { icon: "🌐", label: "Community",     path: "/Community" },
-        { icon: "📧", label: "Digest Logs",   path: "/DigestLogs" },
-        { icon: "⚙️", label: "Settings",      path: "/Settings" },
-      ].map((item) => (
-        <button key={item.label} onClick={() => navigate(item.path)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "12px 24px", background: item.path === active ? "#13151c" : "transparent", border: "none", color: item.path === active ? "#e2e8f0" : "#718096", cursor: "pointer", fontSize: 14, textAlign: "left", borderLeft: item.path === active ? "2px solid #6c63ff" : "2px solid transparent", transition: "all 0.15s" }}>
+      {items.map((item) => (
+        <button
+          key={item.label}
+          onClick={() => navigate(item.path)}
+          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "12px 24px", background: item.path === active ? "#13151c" : "transparent", border: "none", color: item.path === active ? "#e2e8f0" : "#718096", cursor: "pointer", fontSize: 14, textAlign: "left", borderLeft: item.path === active ? "2px solid #6c63ff" : "2px solid transparent", transition: "all 0.15s" }}
+        >
           <span>{item.icon}</span>{item.label}
         </button>
       ))}
@@ -64,14 +70,14 @@ function Sidebar({ navigate, active }) {
 }
 
 // ─── POST CARD ───────────────────────────────────────────────
-function PostCard({ post, currentUser, onLike, onComment, onCommentLike }) {
-  const [expanded, setExpanded]     = useState(false);
-  const [comments, setComments]     = useState([]);
+function PostCard({ post, currentUser, onLike, onComment }) {
+  const [expanded, setExpanded]       = useState(false);
+  const [comments, setComments]       = useState([]);
   const [commentText, setCommentText] = useState("");
-  const [posting, setPosting]       = useState(false);
+  const [posting, setPosting]         = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
 
-  const liked = post.likes?.includes(currentUser?.id);
+  const liked    = Array.isArray(post.likes) && post.likes.includes(currentUser?.id);
   const typeInfo = POST_TYPES.find(t => t.key === post.type) || POST_TYPES[0];
 
   async function loadComments() {
@@ -108,9 +114,8 @@ function PostCard({ post, currentUser, onLike, onComment, onCommentLike }) {
   }
 
   return (
-    <div style={{ background: "#13151c", border: "1px solid #1e2030", borderRadius: 16, overflow: "hidden", transition: "border-color 0.2s" }}>
+    <div style={{ background: "#13151c", border: "1px solid #1e2030", borderRadius: 16, overflow: "hidden" }}>
       <div style={{ padding: "20px 24px" }}>
-        {/* HEADER */}
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
           <Avatar name={post.user_name} email={post.user_email} size={38} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -122,12 +127,8 @@ function PostCard({ post, currentUser, onLike, onComment, onCommentLike }) {
           </div>
         </div>
 
-        {/* CONTENT */}
-        <div style={{ fontSize: 15, color: "#e2e8f0", lineHeight: 1.65, marginBottom: 16, whiteSpace: "pre-wrap" }}>
-          {post.content}
-        </div>
+        <div style={{ fontSize: 15, color: "#e2e8f0", lineHeight: 1.65, marginBottom: 16, whiteSpace: "pre-wrap" }}>{post.content}</div>
 
-        {/* TAGS */}
         {Array.isArray(post.tags) && post.tags.length > 0 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
             {post.tags.map(t => (
@@ -136,26 +137,18 @@ function PostCard({ post, currentUser, onLike, onComment, onCommentLike }) {
           </div>
         )}
 
-        {/* ACTIONS */}
         <div style={{ display: "flex", gap: 20, alignItems: "center", paddingTop: 12, borderTop: "1px solid #1a1c26" }}>
-          <button
-            onClick={() => onLike(post.id, liked)}
-            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: liked ? "#6c63ff" : "#4a5568", fontSize: 13, fontWeight: liked ? 700 : 400, padding: 0 }}
-          >
+          <button onClick={() => onLike(post.id, liked)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: liked ? "#6c63ff" : "#4a5568", fontSize: 13, fontWeight: liked ? 700 : 400, padding: 0 }}>
             <span style={{ fontSize: 16 }}>{liked ? "💜" : "🤍"}</span>
             {(post.likes?.length || 0)} {(post.likes?.length || 0) === 1 ? "like" : "likes"}
           </button>
-          <button
-            onClick={toggleExpand}
-            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: expanded ? "#6c63ff" : "#4a5568", fontSize: 13, padding: 0 }}
-          >
+          <button onClick={toggleExpand} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: expanded ? "#6c63ff" : "#4a5568", fontSize: 13, padding: 0 }}>
             <span style={{ fontSize: 16 }}>💬</span>
             {post.comment_count || 0} {(post.comment_count || 0) === 1 ? "comment" : "comments"}
           </button>
         </div>
       </div>
 
-      {/* COMMENTS SECTION */}
       {expanded && (
         <div style={{ background: "#0f1117", borderTop: "1px solid #1e2030", padding: "16px 24px" }}>
           {loadingComments ? (
@@ -178,8 +171,6 @@ function PostCard({ post, currentUser, onLike, onComment, onCommentLike }) {
               ))}
             </div>
           )}
-
-          {/* COMMENT INPUT */}
           <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
             <Avatar name={currentUser?.full_name} email={currentUser?.email} size={30} />
             <div style={{ flex: 1 }}>
@@ -195,7 +186,7 @@ function PostCard({ post, currentUser, onLike, onComment, onCommentLike }) {
             <button
               onClick={submitComment}
               disabled={!commentText.trim() || posting}
-              style={{ background: "#6c63ff", border: "none", color: "#fff", padding: "10px 16px", borderRadius: 10, cursor: !commentText.trim() || posting ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600, opacity: !commentText.trim() || posting ? 0.5 : 1, whiteSpace: "nowrap" }}
+              style={{ background: "#6c63ff", border: "none", color: "#fff", padding: "10px 16px", borderRadius: 10, cursor: !commentText.trim() || posting ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600, opacity: !commentText.trim() || posting ? 0.5 : 1 }}
             >
               {posting ? "..." : "Post"}
             </button>
@@ -206,35 +197,32 @@ function PostCard({ post, currentUser, onLike, onComment, onCommentLike }) {
   );
 }
 
-// ─── MAIN COMPONENT ──────────────────────────────────────────
+// ─── MAIN ────────────────────────────────────────────────────
 export default function Community() {
   const navigate = useNavigate();
-  const [tab, setTab]             = useState("feed");   // "feed" | "chat"
+  const [tab, setTab]                 = useState("feed");
   const [currentUser, setCurrentUser] = useState(null);
-  const [posts, setPosts]         = useState([]);
-  const [messages, setMessages]   = useState([]);
+  const [posts, setPosts]             = useState([]);
+  const [messages, setMessages]       = useState([]);
   const [postContent, setPostContent] = useState("");
-  const [postType, setPostType]   = useState("post");
-  const [postTags, setPostTags]   = useState("");
-  const [posting, setPosting]     = useState(false);
+  const [postType, setPostType]       = useState("post");
+  const [postTags, setPostTags]       = useState("");
+  const [posting, setPosting]         = useState(false);
   const [loadingPosts, setLoadingPosts] = useState(true);
-  const [chatInput, setChatInput] = useState("");
+  const [chatInput, setChatInput]     = useState("");
   const [sendingChat, setSendingChat] = useState(false);
-  const [filterType, setFilterType] = useState("all");
+  const [filterType, setFilterType]   = useState("all");
   const chatBottomRef = useRef(null);
   const chatPollRef   = useRef(null);
 
-  // Load user
   useEffect(() => {
     User.me?.().then(u => setCurrentUser(u)).catch(() => {});
   }, []);
 
-  // Load feed
   useEffect(() => {
     if (tab === "feed") loadPosts();
   }, [tab, filterType]);
 
-  // Chat polling
   useEffect(() => {
     if (tab === "chat") {
       loadMessages();
@@ -245,7 +233,6 @@ export default function Community() {
     return () => clearInterval(chatPollRef.current);
   }, [tab]);
 
-  // Scroll chat to bottom
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -253,7 +240,7 @@ export default function Community() {
   async function loadPosts() {
     setLoadingPosts(true);
     try {
-      const all = await CommunityPost.list();
+      const all    = await CommunityPost.list();
       const sorted = (all || []).sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
       setPosts(filterType === "all" ? sorted : sorted.filter(p => p.type === filterType));
     } catch (e) { console.error(e); }
@@ -262,7 +249,7 @@ export default function Community() {
 
   async function loadMessages() {
     try {
-      const msgs = await ChatMessage.filter({ room: "general" });
+      const msgs   = await ChatMessage.filter({ room: "general" });
       const sorted = (msgs || []).sort((a, b) => new Date(a.created_date) - new Date(b.created_date)).slice(-100);
       setMessages(sorted);
     } catch (e) { console.error(e); }
@@ -294,7 +281,7 @@ export default function Community() {
 
   async function handleLike(postId, alreadyLiked) {
     if (!currentUser) return;
-    const post = posts.find(p => p.id === postId);
+    const post  = posts.find(p => p.id === postId);
     if (!post) return;
     const likes = alreadyLiked
       ? (post.likes || []).filter(id => id !== currentUser.id)
@@ -304,7 +291,7 @@ export default function Community() {
   }
 
   async function handleCommentPosted(postId) {
-    const post = posts.find(p => p.id === postId);
+    const post  = posts.find(p => p.id === postId);
     if (!post) return;
     const count = (post.comment_count || 0) + 1;
     await CommunityPost.update(postId, { comment_count: count });
@@ -331,20 +318,16 @@ export default function Community() {
 
   return (
     <div style={{ background: "#0A0B0F", minHeight: "100vh", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#fff", display: "flex" }}>
-      <Sidebar navigate={navigate} active="/Community" />
+      <Sidebar navigate={navigate} active="/DropforgeCommunity" />
 
       <main style={{ marginLeft: 220, flex: 1, display: "flex", flexDirection: "column", maxHeight: "100vh", overflow: "hidden" }}>
 
         {/* TOP BAR */}
         <div style={{ padding: "28px 40px 0", borderBottom: "1px solid #1e2030", flexShrink: 0, background: "#0A0B0F" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <div>
-              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.5px", margin: "0 0 4px" }}>🌐 Community</h1>
-              <p style={{ margin: 0, color: "#4a5568", fontSize: 13 }}>Share wins, spot trends, ask questions — all Dropforge users, one room.</p>
-            </div>
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.5px", margin: "0 0 4px" }}>🌐 Community</h1>
+            <p style={{ margin: 0, color: "#4a5568", fontSize: 13 }}>Share wins, spot trends, ask questions — all Dropforge users, one room.</p>
           </div>
-
-          {/* TABS */}
           <div style={{ display: "flex", gap: 0 }}>
             {[{ key: "feed", label: "📋 Feed" }, { key: "chat", label: "💬 Live Chat" }].map(t => (
               <button
@@ -358,14 +341,14 @@ export default function Community() {
           </div>
         </div>
 
-        {/* ══════════════ FEED TAB ══════════════ */}
+        {/* ── FEED TAB ── */}
         {tab === "feed" && (
           <div style={{ flex: 1, overflowY: "auto", padding: "32px 40px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 32, maxWidth: 1100, margin: "0 auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 28, maxWidth: 1060, margin: "0 auto" }}>
 
-              {/* LEFT — POSTS */}
+              {/* LEFT */}
               <div>
-                {/* NEW POST BOX */}
+                {/* NEW POST */}
                 {currentUser && (
                   <div style={{ background: "#13151c", border: "1px solid #1e2030", borderRadius: 16, padding: "20px 24px", marginBottom: 24 }}>
                     <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 14 }}>
@@ -378,126 +361,85 @@ export default function Community() {
                         style={{ flex: 1, background: "#0f1117", border: "1px solid #1e2030", borderRadius: 10, padding: "12px 14px", color: "#e2e8f0", fontSize: 14, outline: "none", resize: "none", fontFamily: "inherit", lineHeight: 1.6 }}
                       />
                     </div>
-                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                      {/* TYPE SELECTOR */}
-                      <div style={{ display: "flex", gap: 6 }}>
-                        {POST_TYPES.map(t => (
-                          <button
-                            key={t.key}
-                            onClick={() => setPostType(t.key)}
-                            style={{ background: postType === t.key ? t.color + "22" : "#0f1117", border: `1px solid ${postType === t.key ? t.color : "#1e2030"}`, color: postType === t.key ? t.color : "#4a5568", padding: "5px 12px", borderRadius: 20, cursor: "pointer", fontSize: 12, fontWeight: 600 }}
-                          >
-                            {t.label}
-                          </button>
-                        ))}
-                      </div>
-                      <input
-                        type="text"
-                        value={postTags}
-                        onChange={e => setPostTags(e.target.value)}
-                        placeholder="tags: fitness, pets, kitchen"
-                        style={{ background: "#0f1117", border: "1px solid #1e2030", borderRadius: 8, padding: "6px 12px", color: "#718096", fontSize: 12, outline: "none", width: 180 }}
-                      />
-                      <button
-                        onClick={submitPost}
-                        disabled={!postContent.trim() || posting}
-                        style={{ marginLeft: "auto", background: "#6c63ff", border: "none", color: "#fff", padding: "8px 20px", borderRadius: 10, cursor: !postContent.trim() || posting ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: !postContent.trim() || posting ? 0.5 : 1 }}
-                      >
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      {POST_TYPES.map(t => (
+                        <button key={t.key} onClick={() => setPostType(t.key)} style={{ background: postType === t.key ? t.color + "22" : "#0f1117", border: `1px solid ${postType === t.key ? t.color : "#1e2030"}`, color: postType === t.key ? t.color : "#4a5568", padding: "5px 12px", borderRadius: 20, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                          {t.label}
+                        </button>
+                      ))}
+                      <input type="text" value={postTags} onChange={e => setPostTags(e.target.value)} placeholder="tags: fitness, pets" style={{ background: "#0f1117", border: "1px solid #1e2030", borderRadius: 8, padding: "6px 12px", color: "#718096", fontSize: 12, outline: "none", width: 160 }} />
+                      <button onClick={submitPost} disabled={!postContent.trim() || posting} style={{ marginLeft: "auto", background: "#6c63ff", border: "none", color: "#fff", padding: "8px 20px", borderRadius: 10, cursor: !postContent.trim() || posting ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, opacity: !postContent.trim() || posting ? 0.5 : 1 }}>
                         {posting ? "Posting..." : "Post →"}
                       </button>
                     </div>
                   </div>
                 )}
 
-                {/* FILTER TABS */}
-                <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+                {/* FILTERS */}
+                <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
                   {[{ key: "all", label: "All" }, ...POST_TYPES.map(t => ({ key: t.key, label: t.label }))].map(f => (
-                    <button
-                      key={f.key}
-                      onClick={() => setFilterType(f.key)}
-                      style={{ background: filterType === f.key ? "#1e2030" : "transparent", border: "1px solid #1e2030", color: filterType === f.key ? "#e2e8f0" : "#4a5568", padding: "5px 14px", borderRadius: 20, cursor: "pointer", fontSize: 12, fontWeight: filterType === f.key ? 600 : 400 }}
-                    >
+                    <button key={f.key} onClick={() => setFilterType(f.key)} style={{ background: filterType === f.key ? "#1e2030" : "transparent", border: "1px solid #1e2030", color: filterType === f.key ? "#e2e8f0" : "#4a5568", padding: "5px 14px", borderRadius: 20, cursor: "pointer", fontSize: 12, fontWeight: filterType === f.key ? 600 : 400 }}>
                       {f.label}
                     </button>
                   ))}
                 </div>
 
-                {/* POSTS LIST */}
+                {/* POSTS */}
                 {loadingPosts ? (
                   <div style={{ color: "#4a5568", textAlign: "center", padding: 60 }}>Loading feed...</div>
                 ) : posts.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "60px 0", color: "#4a5568" }}>
                     <div style={{ fontSize: 40, marginBottom: 12 }}>👋</div>
-                    <div style={{ fontSize: 15, color: "#718096", marginBottom: 8 }}>Be the first to post in the community</div>
-                    <div style={{ fontSize: 13 }}>Share a trend, a win, or ask a question. Every great community starts with one post.</div>
+                    <div style={{ fontSize: 15, color: "#718096", marginBottom: 8 }}>Be the first to post in the community.</div>
+                    <div style={{ fontSize: 13 }}>Share a trend, a win, or ask a question.</div>
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     {posts.map(post => (
-                      <PostCard
-                        key={post.id}
-                        post={post}
-                        currentUser={currentUser}
-                        onLike={handleLike}
-                        onComment={handleCommentPosted}
-                        onCommentLike={() => {}}
-                      />
+                      <PostCard key={post.id} post={post} currentUser={currentUser} onLike={handleLike} onComment={handleCommentPosted} />
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* RIGHT — SIDEBAR WIDGETS */}
+              {/* RIGHT WIDGETS */}
               <div>
-                {/* ABOUT */}
-                <div style={{ background: "#13151c", border: "1px solid #1e2030", borderRadius: 14, padding: "20px", marginBottom: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#a0aec0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>About this community</div>
-                  <div style={{ fontSize: 13, color: "#718096", lineHeight: 1.7 }}>
-                    A private space for Dropforge users to share wins, spot trends early, and help each other build better stores. What you share here stays here.
-                  </div>
+                <div style={{ background: "#13151c", border: "1px solid #1e2030", borderRadius: 14, padding: "20px", marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#a0aec0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>About</div>
+                  <div style={{ fontSize: 13, color: "#718096", lineHeight: 1.7 }}>A private space for Dropforge users. Share wins, spot trends early, help each other build better stores. What you share here stays here.</div>
                 </div>
-
-                {/* POST TYPE LEGEND */}
-                <div style={{ background: "#13151c", border: "1px solid #1e2030", borderRadius: 14, padding: "20px", marginBottom: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#a0aec0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Post Types</div>
+                <div style={{ background: "#13151c", border: "1px solid #1e2030", borderRadius: 14, padding: "20px", marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#a0aec0", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Post Types</div>
                   {POST_TYPES.map(t => (
-                    <div key={t.key} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                    <div key={t.key} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
                       <span style={{ background: t.color + "22", color: t.color, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>{t.label}</span>
                       <span style={{ fontSize: 12, color: "#4a5568" }}>
                         {t.key === "post" && "Open discussion"}
-                        {t.key === "trend" && "Spotted a trending product"}
-                        {t.key === "win" && "Share a success story"}
+                        {t.key === "trend" && "Trending product"}
+                        {t.key === "win"   && "Success story"}
                         {t.key === "question" && "Ask the community"}
                       </span>
                     </div>
                   ))}
                 </div>
-
-                {/* QUICK JUMP TO CHAT */}
-                <div
-                  onClick={() => setTab("chat")}
-                  style={{ background: "#1e1d3a", border: "1px solid #6c63ff44", borderRadius: 14, padding: "20px", cursor: "pointer" }}
-                >
+                <div onClick={() => setTab("chat")} style={{ background: "#1e1d3a", border: "1px solid #6c63ff44", borderRadius: 14, padding: "20px", cursor: "pointer" }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#6c63ff", marginBottom: 6 }}>💬 Live Chat →</div>
-                  <div style={{ fontSize: 12, color: "#718096" }}>Jump into the real-time chatroom to talk trends and products with other users right now.</div>
+                  <div style={{ fontSize: 12, color: "#718096" }}>Jump into the real-time chatroom to talk trends with other users right now.</div>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* ══════════════ LIVE CHAT TAB ══════════════ */}
+        {/* ── CHAT TAB ── */}
         {tab === "chat" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-
-            {/* CHAT HEADER */}
             <div style={{ padding: "12px 40px", background: "#0d0e13", borderBottom: "1px solid #1e2030", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80" }} />
-              <span style={{ fontSize: 13, color: "#718096" }}>General · Live · Auto-refreshes every 4 seconds</span>
+              <span style={{ fontSize: 13, color: "#718096" }}>General · Live · Refreshes every 4 seconds</span>
             </div>
 
-            {/* MESSAGES */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "24px 40px", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: "24px 40px", display: "flex", flexDirection: "column", gap: 10 }}>
               {messages.length === 0 ? (
                 <div style={{ textAlign: "center", color: "#4a5568", padding: "60px 0" }}>
                   <div style={{ fontSize: 32, marginBottom: 12 }}>💬</div>
@@ -505,11 +447,11 @@ export default function Community() {
                 </div>
               ) : (
                 messages.map((msg, i) => {
-                  const isMe = msg.user_id === currentUser?.id;
-                  const showAvatar = i === 0 || messages[i - 1].user_id !== msg.user_id;
+                  const isMe        = msg.user_id === currentUser?.id;
+                  const showAvatar  = i === 0 || messages[i - 1].user_id !== msg.user_id;
                   return (
                     <div key={msg.id} style={{ display: "flex", gap: 10, alignItems: "flex-end", flexDirection: isMe ? "row-reverse" : "row" }}>
-                      {showAvatar && !isMe
+                      {!isMe && showAvatar
                         ? <Avatar name={msg.user_name} email={msg.user_email} size={30} />
                         : <div style={{ width: 30, flexShrink: 0 }} />
                       }
@@ -519,23 +461,10 @@ export default function Community() {
                             {msg.user_name || msg.user_email} · {timeAgo(msg.created_date)}
                           </div>
                         )}
-                        <div style={{
-                          background: isMe ? "#6c63ff" : "#13151c",
-                          border: `1px solid ${isMe ? "#6c63ff" : "#1e2030"}`,
-                          borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                          padding: "10px 14px",
-                          fontSize: 14,
-                          color: "#e2e8f0",
-                          lineHeight: 1.5,
-                          wordBreak: "break-word",
-                        }}>
+                        <div style={{ background: isMe ? "#6c63ff" : "#13151c", border: `1px solid ${isMe ? "#6c63ff" : "#1e2030"}`, borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px", padding: "10px 14px", fontSize: 14, color: "#e2e8f0", lineHeight: 1.5, wordBreak: "break-word" }}>
                           {msg.content}
                         </div>
-                        {isMe && (
-                          <div style={{ fontSize: 11, color: "#4a5568", marginTop: 3, textAlign: "right", paddingRight: 2 }}>
-                            {timeAgo(msg.created_date)}
-                          </div>
-                        )}
+                        {isMe && <div style={{ fontSize: 11, color: "#4a5568", marginTop: 3, textAlign: "right", paddingRight: 2 }}>{timeAgo(msg.created_date)}</div>}
                       </div>
                     </div>
                   );
@@ -544,20 +473,17 @@ export default function Community() {
               <div ref={chatBottomRef} />
             </div>
 
-            {/* CHAT INPUT */}
             <div style={{ padding: "16px 40px", borderTop: "1px solid #1e2030", background: "#0d0e13", flexShrink: 0 }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-end", maxWidth: 860, margin: "0 auto" }}>
                 {currentUser && <Avatar name={currentUser.full_name} email={currentUser.email} size={34} />}
-                <div style={{ flex: 1 }}>
-                  <textarea
-                    value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
-                    placeholder="Message the community... (Enter to send)"
-                    rows={1}
-                    style={{ width: "100%", background: "#13151c", border: "1px solid #1e2030", borderRadius: 12, padding: "12px 16px", color: "#e2e8f0", fontSize: 14, outline: "none", resize: "none", fontFamily: "inherit", boxSizing: "border-box" }}
-                  />
-                </div>
+                <textarea
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } }}
+                  placeholder="Message the community... (Enter to send)"
+                  rows={1}
+                  style={{ flex: 1, background: "#13151c", border: "1px solid #1e2030", borderRadius: 12, padding: "12px 16px", color: "#e2e8f0", fontSize: 14, outline: "none", resize: "none", fontFamily: "inherit", boxSizing: "border-box" }}
+                />
                 <button
                   onClick={sendChatMessage}
                   disabled={!chatInput.trim() || sendingChat || !currentUser}
