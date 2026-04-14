@@ -1,2 +1,2 @@
-# autopilot-shops
-AI-powered Shopify dropshipping automation SaaS — AutoPilot Shops
+# Dropforge
+AI-powered Shopify dropshipping automation SaaS — Dropforge
