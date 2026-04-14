@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "properties": {
+    "store_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "niche_key": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "compare_at_price": {
+      "type": "number"
+    },
+    "cost_price": {
+      "type": "number"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "supplier_url": {
+      "type": "string"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "shopify_product_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "published",
+        "failed"
+      ]
+    },
+    "trend_score": {
+      "type": "number"
+    },
+    "ai_generated": {
+      "type": "boolean"
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "rejection_reason": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "Product"
+}
