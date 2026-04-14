@@ -1,9 +1,8 @@
 /**
- * shopifyInstall.ts
- * v1.2 — Updated REDIRECT_URI to match v1.4 Shopify Partner config.
- * Was: api.base44.com/api/apps/.../functions/shopifyCallback
- * Now: bay-9782871f.base44.app/functions/shopifyCallback
- * #shopify #oauth #install #fix #phase2
+ * shopifyInstall.ts — Dropforge v2
+ * Initiates the Shopify OAuth install flow.
+ * Redirects the merchant to Shopify's authorization page.
+ * #shopify #oauth #install #phase1
  */
 
 const SHOPIFY_API_KEY = Deno.env.get('SHOPIFY_API_KEY')!;
@@ -15,10 +14,10 @@ const SCOPES = [
   'read_inventory',
 ].join(',');
 
-const REDIRECT_URI = `https://bay-9782871f.base44.app/functions/shopifyCallback`;
+const REDIRECT_URI = 'https://dropforge.pro/functions/shopifyCallback';
 
 Deno.serve(async (req) => {
-  const url = new URL(req.url);
+  const url  = new URL(req.url);
   const shop = url.searchParams.get('shop');
 
   console.log('shopifyInstall called for shop:', shop);
@@ -31,16 +30,13 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Invalid shop domain', shop }, { status: 400 });
   }
 
-  const state = crypto.randomUUID();
-
-  const installUrl = `https://${shop}/admin/oauth/authorize?` + new URLSearchParams({
-    client_id: SHOPIFY_API_KEY,
-    scope: SCOPES,
+  const installUrl = 'https://' + shop + '/admin/oauth/authorize?' + new URLSearchParams({
+    client_id:    SHOPIFY_API_KEY,
+    scope:        SCOPES,
     redirect_uri: REDIRECT_URI,
-    state: state,
   }).toString();
 
-  console.log('Redirecting to Shopify install URL:', installUrl);
+  console.log('Redirecting to:', installUrl);
 
   return new Response(null, {
     status: 302,
