@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "shopify_domain": {
+      "type": "string"
+    },
+    "shopify_access_token": {
+      "type": "string"
+    },
+    "shopify_store_name": {
+      "type": "string"
+    },
+    "shopify_store_email": {
+      "type": "string"
+    },
+    "shopify_plan": {
+      "type": "string"
+    },
+    "connection_status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "disconnected",
+        "pending",
+        "error"
+      ]
+    },
+    "auto_publish": {
+      "type": "boolean"
+    },
+    "digest_time": {
+      "type": "string"
+    },
+    "digest_enabled": {
+      "type": "boolean"
+    },
+    "last_synced": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "Store"
+}
