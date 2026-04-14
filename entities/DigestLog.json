@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+    "store_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "sent_at": {
+      "type": "string"
+    },
+    "products_published": {
+      "type": "number"
+    },
+    "products_pending": {
+      "type": "number"
+    },
+    "products_rejected": {
+      "type": "number"
+    },
+    "digest_html": {
+      "type": "string"
+    },
+    "delivery_status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "failed",
+        "skipped"
+      ]
+    },
+    "error_message": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "DigestLog"
+}
