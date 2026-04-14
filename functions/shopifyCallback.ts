@@ -1,7 +1,11 @@
 /**
- * shopifyCallback.ts — Dropforge v2
+ * shopifyCallback.ts — Dropforge v2.1
  * Handles Shopify OAuth callback — verifies HMAC, exchanges code for
  * permanent access token, saves Store record, redirects to dashboard.
+ *
+ * v2.1 fix: user_id is now derived from shopify_domain as a stable
+ * placeholder since no Base44 user session exists during OAuth handshake.
+ * #shopify #oauth #callback #phase1 #fix
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
@@ -23,20 +27,20 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Missing required parameters' }, { status: 400 });
   }
 
-  // Verify HMAC
+  // --- HMAC Verification — proves this request is genuinely from Shopify ---
   const queryParams = Array.from(params.entries())
     .filter(([key]) => key !== 'hmac')
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}=${v}`)
     .join('&');
 
-  const encoder  = new TextEncoder();
+  const encoder   = new TextEncoder();
   const cryptoKey = await crypto.subtle.importKey(
     'raw', encoder.encode(SHOPIFY_API_SECRET),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   );
-  const signature     = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(queryParams));
-  const computedHmac  = Array.from(new Uint8Array(signature))
+  const signature    = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(queryParams));
+  const computedHmac = Array.from(new Uint8Array(signature))
     .map(b => b.toString(16).padStart(2, '0')).join('');
 
   if (computedHmac !== hmac) {
@@ -44,7 +48,7 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'HMAC verification failed' }, { status: 403 });
   }
 
-  // Exchange code for access token
+  // --- Exchange one-time code for permanent access token ---
   let tokenData: any;
   try {
     const tokenRes = await fetch(`https://${shop}/admin/oauth/access_token`, {
@@ -66,7 +70,7 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'No access token returned', details: tokenData }, { status: 400 });
   }
 
-  // Fetch store info
+  // --- Fetch store metadata from Shopify ---
   let shopInfo: any = {};
   try {
     const shopRes  = await fetch(`https://${shop}/admin/api/2024-01/shop.json`, {
@@ -74,18 +78,23 @@ Deno.serve(async (req) => {
     });
     const shopData = await shopRes.json();
     shopInfo = shopData.shop || {};
-    console.log('Store info:', shopInfo.name);
+    console.log('Store info fetched:', shopInfo.name);
   } catch (e) {
     console.warn('Store info fetch failed (non-fatal):', String(e));
   }
 
-  // Save to database
+  // --- Save store record to database ---
+  // NOTE: user_id is set to the shop domain as a stable identifier.
+  // When the merchant logs into Dropforge, the Dashboard will update
+  // this record with their real Base44 user ID.
   try {
     const base44 = createClientFromRequest(req);
     const db     = base44.asServiceRole.entities;
 
     const existing = await db.Store.filter({ shopify_domain: shop });
+
     const storeRecord = {
+      user_id:              shopInfo?.id ? String(shopInfo.id) : shop,
       shopify_domain:       shop,
       shopify_access_token: tokenData.access_token,
       shopify_store_name:   shopInfo?.name  || shop,
@@ -110,7 +119,7 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Database save failed', detail: String(e) }, { status: 500 });
   }
 
-  // Redirect to new Dropforge app dashboard
+  // --- Redirect merchant to their Dropforge dashboard ---
   return new Response(null, {
     status: 302,
     headers: { 'Location': `https://dropforge.pro/Dashboard?shop=${shop}` },
